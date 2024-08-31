@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Pi Camera on HLS</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+      }
+
+      #controlsForm {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding-top: 5px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+      }
+
+      select,
+      button {
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      button {
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+      }
+
+      button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+    </style>
+  </head>
+
+  <body>
+    <video id="video" width="500" height="500" controls></video>
+
+    <form id="controlsForm">
+      <label for="gainSelect">Gain:</label>
+      <select id="gainSelect">
+        <option value="">Default</option>
+        <option value="2">2</option>
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="30">30</option>
+        <option value="50">50</option>
+      </select>
+
+      <label for="shutterSelect">Shutter:</label>
+      <select id="shutterSelect">
+        <option value="">Default</option>
+        <option value="5000">5000</option>
+        <option value="50000">50000</option>
+        <option value="500000">500000</option>
+        <option value="5000000">5000000</option>
+        <option value="10000000">10000000</option>
+      </select>
+
+      <button id="startButton" type="button" disabled>Start</button>
+      <button id="stopButton" type="button" disabled>Stop</button>
+    </form>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script>
+      const video = document.getElementById("video");
+      const videoSrc = "/live/index.m3u8";
+
+      let hls;
+
+      if (Hls.isSupported()) {
+        hls = new Hls();
+
+        hls.loadSource(videoSrc);
+        hls.attachMedia(video);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          video.play();
+        });
+      } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = videoSrc;
+        video.addEventListener("loadedmetadata", () => {
+          video.play();
+        });
+      }
+
+      const socket = io();
+
+      socket.on("live", async (notification) => {
+        const { isLive } = await checkStreamStatus();
+
+        if (hls && isLive) {
+          hls.destroy();
+
+          hls = new Hls();
+
+          hls.loadSource(videoSrc);
+          hls.attachMedia(video);
+
+          hls.on(Hls.Events.MEDIA_ATTACHED, function () {
+            hls.startLoad();
+          });
+
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            video.play();
+          });
+        }
+      });
+
+      function checkStreamStatus() {
+        return fetch("/api/live_status")
+          .then(async (response) => {
+            if (!response.ok) throw new Error("Error from server");
+
+            const data = await response.json();
+
+            if (data.isLive) {
+              startButton.disabled = true;
+              stopButton.disabled = false;
+            } else {
+              startButton.disabled = false;
+              stopButton.disabled = true;
+            }
+
+            return data;
+          })
+          .catch((error) => console.log(error))
+          .finally(() => (document.body.style.cursor = "default"));
+      }
+
+      checkStreamStatus();
+      // setInterval(checkStreamStatus, 30000); // not needed with socket
+
+      startButton.addEventListener("click", () => {
+        const gain = gainSelect.value;
+        const shutter = shutterSelect.value;
+
+        startButton.disabled = true;
+        document.body.style.cursor = "wait";
+
+        fetch("/api/live_start", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          timeout: 30000,
+          body: JSON.stringify({ gain, shutter }),
+        })
+          .then((response) => {
+            if (!response.ok) throw new Error("Error from server");
+          })
+          .catch((error) => console.log(error));
+      });
+
+      stopButton.addEventListener("click", () => {
+        stopButton.disabled = true;
+        document.body.style.cursor = "wait";
+
+        fetch("/api/live_stop", {
+          method: "POST",
+        })
+          .then((response) => {
+            if (!response.ok) throw new Error("Error from server");
+          })
+          .catch((error) => console.log(error));
+      });
+    </script>
+  </body>
+</html>
