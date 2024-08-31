@@ -15,8 +15,6 @@ app.use(bodyParser.json());
 
 app.use("/", express.static(path.join(__dirname, "client")));
 
-app.use("/test", express.static(path.join(__dirname, "tests")));
-
 app.use("/live", express.static(path.join(__dirname, "stream")));
 
 app.post("/api/live_start", async (req, res) => {
