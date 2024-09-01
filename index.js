@@ -25,7 +25,7 @@ app.post("/api/live_start", async (req, res) => {
 
   try {
     spawn(
-      `libcamera-vid -t 0 ${resolution} --framerate 30 --codec h264 --bitrate ${bitrate} ${g} ${s} -o - | ffmpeg -i - -c copy -f hls -hls_time 4 -hls_list_size 5 -hls_flags delete_segments -hls_segment_filename './stream/segment_%03d.ts' ./stream/index.m3u8`,
+      `libcamera-vid -t 0 ${resolution} --framerate 15 --codec h264 --bitrate ${bitrate} ${g} ${s} -o - | ffmpeg -i - -c copy -f hls -hls_time 4 -hls_list_size 5 -hls_flags delete_segments -hls_segment_filename './stream/segment_%03d.ts' ./stream/index.m3u8`,
       {
         shell: true,
         detached: true,
