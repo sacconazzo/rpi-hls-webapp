@@ -13,8 +13,8 @@
       }
 
       #controlsForm {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); /* 2 rows */
         gap: 10px;
         padding-top: 5px;
       }
@@ -49,6 +49,21 @@
     <video id="video" width="500" height="500" controls></video>
 
     <form id="controlsForm">
+      <label for="resolutionSelect">Resolution:</label>
+      <select id="resolutionSelect">
+        <option value="--width 640 --height 480">640x480</option>
+        <option value="--width 800 --height 600">800x600</option>
+        <option value="--width 1024 --height 768">1024x768</option>
+        <option value="--width 1280 --height 960">1280x960</option>
+      </select>
+
+      <label for="bitrateSelect">Bitrate:</label>
+      <select id="bitrateSelect">
+        <option value="500000">500kbps</option>
+        <option value="1000000">1Mbps</option>
+        <option value="2000000">2Mbps</option>
+      </select>
+
       <label for="gainSelect">Gain:</label>
       <select id="gainSelect">
         <option value="">Default</option>
@@ -148,6 +163,8 @@
       startButton.addEventListener("click", () => {
         const gain = gainSelect.value;
         const shutter = shutterSelect.value;
+        const resolution = resolutionSelect.value;
+        const bitrate = bitrateSelect.value;
 
         startButton.disabled = true;
         document.body.style.cursor = "wait";
@@ -158,7 +175,7 @@
             "Content-Type": "application/json",
           },
           timeout: 30000,
-          body: JSON.stringify({ gain, shutter }),
+          body: JSON.stringify({ gain, shutter, resolution, bitrate }),
         })
           .then((response) => {
             if (!response.ok) throw new Error("Error from server");
