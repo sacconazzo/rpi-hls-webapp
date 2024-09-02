@@ -24,7 +24,6 @@ app.post("/api/live_start", async (req, res) => {
   const s = shutter ? `--shutter ${shutter}` : "";
 
   try {
-    execSync(`sudo rm stream/*`);
     spawn(
       `libcamera-vid -t 0 ${resolution} --framerate 15 --codec h264 --bitrate ${bitrate} ${g} ${s} -o - | ffmpeg -i - -c copy -f hls -hls_time 4 -hls_list_size 5 -hls_flags delete_segments -hls_segment_filename './stream/segment_%03d.ts' ./stream/index.m3u8`,
       {
@@ -49,6 +48,7 @@ app.post("/api/live_start", async (req, res) => {
 app.post("/api/live_stop", async (req, res) => {
   try {
     execSync(`sudo pkill libcamera-vid`);
+    execSync(`sudo rm -f stream/*`);
 
     isLive = false;
     io.emit("live", { event: "stop" });
