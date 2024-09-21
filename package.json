@@ -11,7 +11,7 @@
     "start:live": "libcamera-vid -t 0 --width 640 --height 480 --framerate 30 --codec h264 -o - | ffmpeg -re -i - -c:v libx264 -b:v 500k -maxrate 700k -bufsize 1000k -f hls -hls_time 4 -hls_list_size 5 -hls_flags delete_segments -hls_segment_filename './stream/segment_%03d.ts' ./stream/index.m3u8"
   },
   "dependencies": {
-    "express": "^4.19.2",
+    "express": "^4.20.0",
     "socket.io": "^4.7.5"
   }
 }
