@@ -55,6 +55,15 @@
         <option value="--width 800 --height 600">800x600</option>
         <option value="--width 1024 --height 768">1024x768</option>
         <option value="--width 1280 --height 960">1280x960</option>
+        <option value="--width 1920 --height 1080">1920x1080</option>
+        <!-- <option value="--width 2592 --height 1944">2592x1944</option> -->
+      </select>
+
+      <label for="framerateSelect">Framerate:</label>
+      <select id="framerateSelect">
+        <option value="15">15fps</option>
+        <option value="30">30fps</option>
+        <option value="60">60fps</option>
       </select>
 
       <label for="bitrateSelect">Bitrate:</label>
@@ -62,6 +71,7 @@
         <option value="500000">500kbps</option>
         <option value="1000000">1Mbps</option>
         <option value="2000000">2Mbps</option>
+        <option value="4000000">4Mbps</option>
       </select>
 
       <label for="gainSelect">Gain:</label>
@@ -165,6 +175,7 @@
         const shutter = shutterSelect.value;
         const resolution = resolutionSelect.value;
         const bitrate = bitrateSelect.value;
+        const framerate = framerateSelect.value;
 
         startButton.disabled = true;
         document.body.style.cursor = "wait";
@@ -175,7 +186,13 @@
             "Content-Type": "application/json",
           },
           timeout: 30000,
-          body: JSON.stringify({ gain, shutter, resolution, bitrate }),
+          body: JSON.stringify({
+            gain,
+            shutter,
+            resolution,
+            bitrate,
+            framerate,
+          }),
         })
           .then((response) => {
             if (!response.ok) throw new Error("Error from server");
