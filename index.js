@@ -12,6 +12,13 @@ const io = new Server(server);
 let isLive = false;
 
 app.use(bodyParser.json());
+app.use(
+  cors({
+    origin: ["https://app.giona.tech", "http://localhost"],
+    credentials: true,
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE,CONNECT,OPTIONS,TRACE",
+  })
+);
 
 app.use("/", express.static(path.join(__dirname, "client")));
 
