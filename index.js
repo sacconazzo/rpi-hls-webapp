@@ -3,6 +3,7 @@ const express = require("express");
 const { Server } = require("socket.io");
 const bodyParser = require("body-parser");
 const path = require("path");
+const cors = require("cors");
 const { execSync, spawn } = require("child_process");
 
 const app = express();
