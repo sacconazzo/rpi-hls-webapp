@@ -33,7 +33,7 @@ app.post("/api/live_start", async (req, res) => {
 
   try {
     spawn(
-      `libcamera-vid -t 0 ${resolution} --framerate ${framerate} --codec h264 --bitrate ${bitrate} ${g} ${s} -o - | ffmpeg -i - -c copy -f hls -hls_time 4 -hls_list_size 5 -hls_flags delete_segments -hls_segment_filename './stream/segment_%03d.ts' ./stream/index.m3u8`,
+      `rpicam-vid -t 0 ${resolution} --framerate ${framerate} --codec h264 --bitrate ${bitrate} ${g} ${s} -o - | ffmpeg -i - -c copy -f hls -hls_time 4 -hls_list_size 5 -hls_flags delete_segments -hls_segment_filename './stream/segment_%03d.ts' ./stream/index.m3u8`,
       {
         shell: true,
         detached: true,
@@ -55,7 +55,7 @@ app.post("/api/live_start", async (req, res) => {
 
 app.post("/api/live_stop", async (req, res) => {
   try {
-    execSync(`sudo pkill libcamera-vid`);
+    execSync(`sudo pkill rpicam-vid`);
     execSync(`sudo rm -f stream/*`);
 
     isLive = false;
@@ -71,7 +71,7 @@ app.post("/api/live_stop", async (req, res) => {
 app.get("/api/live_status", async (req, res) => {
   try {
     res.json({
-      isLive: isLive && !!execSync(`pgrep libcamera-vid`).toString(),
+      isLive: isLive && !!execSync(`pgrep rpicam-vid`).toString(),
     });
   } catch (e) {
     res.json({
